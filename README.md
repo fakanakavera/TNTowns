@@ -1,6 +1,6 @@
 # TNtowns (Paper 1.21.4)
 
-TNtowns is a territory, economy, and social-structure plugin inspired by Towny, tailored for MMO-style servers. It implements Residents → Towns → Nations; chunk claims; banks and upkeep; diplomacy; plots; jail/outlaw; chat channels; territory caps with paid expansion; and rich command tab-completion. It integrates with Vault for economy and declares soft-depends for MMOItems/MMOCore/Essentials.
+TNtowns is a territory, economy, and social-structure plugin, tailored for MMO-style servers. It implements Residents → Towns → Nations; chunk claims; banks and upkeep; diplomacy; plots; jail/outlaw; chat channels; territory caps with paid expansion; and rich command tab-completion. It integrates with Vault for economy and declares soft-depends for MMOItems/MMOCore/Essentials.
 
 ## Requirements
 - PaperMC 1.21.4 (or compatible)
