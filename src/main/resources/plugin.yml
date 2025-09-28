@@ -1,0 +1,46 @@
+name: TNtowns
+version: 0.1.0-SNAPSHOT
+main: com.tntowns.TNtownsPlugin
+api-version: '1.21'
+depend:
+  - Vault
+softdepend:
+  - MMOItems
+  - MMOCore
+  - Essentials
+  - TNauctionhouse
+
+commands:
+  tntown:
+    description: Base command for TNtowns.
+    usage: /<command> help|compass|create|claim|unclaim|bank|invite|accept|leave|kick|settax|setmayor
+    permission: tntowns.use
+    aliases: [t]
+  tntownchat:
+    description: Toggle chat channel
+    usage: /<command> <global|local|town|nation>
+    permission: tntowns.use
+  nation:
+    description: Nation management
+    usage: /<command> <create|addtown|ally|enemy|bank|expand|invite|accept|kick|rank>
+    permission: tntowns.use
+  plot:
+    description: Plot sales and ownership
+    usage: /<command> <forsale|buy|setowner>
+    permission: tntowns.use
+
+permissions:
+  tntowns.use:
+    default: true
+  tntowns.claim:
+    default: false
+  tntowns.unclaim:
+    default: false
+  tntowns.invite:
+    default: false
+  tntowns.admin:
+    default: op
+  tntowns.plot.admin:
+    default: op
+
+

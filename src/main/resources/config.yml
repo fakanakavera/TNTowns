@@ -1,0 +1,27 @@
+costs:
+  create_town: 500.0
+  claim_chunk: 50.0
+  unclaim_refund: 25.0
+
+taxes:
+  upkeep_per_resident_daily: 10.0
+
+scheduler:
+  upkeep_interval_minutes: 1440
+
+chat:
+  prefix: "&6[\uE000TNtowns&6] &r"
+
+protection:
+  allow_allies_build: false
+
+nation:
+  territory:
+    base_slots: 1
+    expansion_costs:
+      - 1000.0
+      - 2500.0
+      - 5000.0
+      - 10000.0
+
+
