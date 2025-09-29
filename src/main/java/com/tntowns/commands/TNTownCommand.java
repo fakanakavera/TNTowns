@@ -59,7 +59,12 @@ public class TNTownCommand implements CommandExecutor, TabCompleter {
 					player.sendMessage("§eUsage: /" + label + " create <name>");
 					return true;
 				}
-				handleCreate(player, joinArgs(args, 1));
+				String name = joinArgs(args, 1);
+				if (townService.isTownNameTaken(name)) {
+					player.sendMessage("§cA town with that name already exists.");
+					return true;
+				}
+				handleCreate(player, name);
 				return true;
 			case "claim":
 				handleClaim(player);

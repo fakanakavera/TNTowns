@@ -198,6 +198,13 @@ public class TownService {
         }
         return java.util.Optional.empty();
     }
+
+    public boolean isTownNameTaken(String townName) {
+        for (Town t : dataStore.getTowns().values()) {
+            if (t.getName() != null && t.getName().equalsIgnoreCase(townName)) return true;
+        }
+        return false;
+    }
 }
 
 
