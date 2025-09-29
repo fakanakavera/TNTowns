@@ -3,7 +3,7 @@
 
   <groupId>com.tntowns</groupId>
   <artifactId>TNtowns</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.1</version>
   <name>TNtowns</name>
   <description>Towns and Nations for Paper 1.21.4</description>
   <url>https://example.com/TNtowns</url>
