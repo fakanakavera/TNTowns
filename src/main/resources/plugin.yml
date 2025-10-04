@@ -22,7 +22,7 @@ commands:
     permission: tntowns.use
   nation:
     description: Nation management
-    usage: /<command> <create|addtown|ally|enemy|bank|expand|invite|accept|kick|rank>
+    usage: /<command> <create|addtown|ally|enemy|bank|expand|invite|accept|kick|rank|market>
     permission: tntowns.use
   plot:
     description: Plot sales and ownership

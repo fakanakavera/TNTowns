@@ -24,6 +24,7 @@ public final class TNtownsPlugin extends JavaPlugin {
 	private InviteManager inviteManager;
 	private com.tntowns.service.NationService nationService;
 	private com.tntowns.service.PlotService plotService;
+	private com.tntowns.service.MarketService marketService;
 
 	public static TNtownsPlugin getInstance() {
 		return instance;
@@ -45,6 +46,10 @@ public final class TNtownsPlugin extends JavaPlugin {
 		return nationService;
 	}
 
+	public com.tntowns.service.MarketService getMarketService() {
+		return marketService;
+	}
+
 	@Override
 	public void onEnable() {
 		instance = this;
@@ -62,6 +67,7 @@ public final class TNtownsPlugin extends JavaPlugin {
 		this.inviteManager = new InviteManager();
 		this.nationService = new com.tntowns.service.NationService(dataStore);
 		this.plotService = new com.tntowns.service.PlotService(dataStore);
+		this.marketService = new com.tntowns.service.MarketService(dataStore);
 		try {
 			dataStore.loadAll();
 			getLogger().info("Loaded residents, towns, nations.");

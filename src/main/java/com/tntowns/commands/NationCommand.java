@@ -128,6 +128,72 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 					return true;
 				}
 			}
+			case "market": {
+				if (town.getNationId() == null) { p.sendMessage("§cYour town is not in a nation."); return true; }
+				com.tntowns.model.Nation nation = nationService.getNationById(town.getNationId()).orElse(null);
+				if (nation == null) { p.sendMessage("§cNation not found."); return true; }
+				com.tntowns.service.MarketService ms = com.tntowns.TNtownsPlugin.getInstance().getMarketService();
+				com.tntowns.model.NationMarket m = ms.getOrCreate(nation.getId());
+				if (args.length == 1) { // info
+					p.sendMessage("§6Nation Market:");
+					p.sendMessage("§7Price: §e$" + String.format(java.util.Locale.US, "%.2f", ms.getSpotPrice(m)) + " §7| Liquidity: §e$" + String.format(java.util.Locale.US, "%.2f", m.getCurrencyReserve()) + " §7/ Shares: §e" + String.format(java.util.Locale.US, "%.2f", m.getShareReserve()));
+					p.sendMessage("§7Your shares: §e" + String.format(java.util.Locale.US, "%.4f", m.getHolderShares().getOrDefault(p.getUniqueId().toString(), 0.0)));
+					return true;
+				}
+				if (args.length >= 2 && args[1].equalsIgnoreCase("price")) {
+					p.sendMessage("§6Current price: §e$" + String.format(java.util.Locale.US, "%.4f", ms.getSpotPrice(m)) + " §7(per share)");
+					return true;
+				}
+				if (args.length >= 3 && args[1].equalsIgnoreCase("buy")) {
+					double amount;
+					try { amount = Double.parseDouble(args[2]); } catch (NumberFormatException ex) { p.sendMessage("§cInvalid amount."); return true; }
+					if (amount <= 0) { p.sendMessage("§cAmount must be positive."); return true; }
+					double minShares = (args.length >= 4 ? safeDouble(args[3], 0.0) : 0.0);
+					// Policy: nation members cannot buy their own nation's shares
+					if (town.getNationId() != null && town.getNationId().equalsIgnoreCase(nation.getId())) {
+						p.sendMessage("§cNation members cannot buy their own nation's shares.");
+						return true;
+					}
+					double quote = ms.quoteBuy(m, amount);
+					p.sendMessage("§7Quote: buy with §e$" + String.format(java.util.Locale.US, "%.2f", amount) + " §7→ receive ≈ §e" + String.format(java.util.Locale.US, "%.4f", quote) + " §7shares.");
+					if (com.tntowns.TNtownsPlugin.getInstance().getEconomy().getBalance(p) < amount) { p.sendMessage("§cInsufficient funds."); return true; }
+					boolean ok = ms.buy(nation, m, p.getUniqueId(), amount, minShares);
+					p.sendMessage(ok ? "§aTrade executed." : "§cTrade failed.");
+					return true;
+				}
+				if (args.length >= 3 && args[1].equalsIgnoreCase("sell")) {
+					double shares;
+					try { shares = Double.parseDouble(args[2]); } catch (NumberFormatException ex) { p.sendMessage("§cInvalid amount."); return true; }
+					if (shares <= 0) { p.sendMessage("§cAmount must be positive."); return true; }
+					double minOut = (args.length >= 4 ? safeDouble(args[3], 0.0) : 0.0);
+					double quote = ms.quoteSell(m, shares);
+					p.sendMessage("§7Quote: sell §e" + String.format(java.util.Locale.US, "%.4f", shares) + " §7shares → receive ≈ §e$" + String.format(java.util.Locale.US, "%.2f", quote));
+					boolean ok = ms.sell(nation, m, p.getUniqueId(), shares, minOut);
+					p.sendMessage(ok ? "§aTrade executed." : "§cTrade failed.");
+					return true;
+				}
+				if (args.length >= 2 && args[1].equalsIgnoreCase("admin")) {
+					boolean isAdmin = nationService.isAdminOrKingTownMayor(nation, town, p.getUniqueId());
+					if (!isAdmin) { p.sendMessage("§cYou are not a nation admin."); return true; }
+					if (args.length >= 3 && args[2].equalsIgnoreCase("ipo")) {
+						if (args.length < 5) { p.sendMessage("§eUsage: /" + label + " market admin ipo <currencySeed> <shareSeed>"); return true; }
+						double c = safeDouble(args[3], -1);
+						double s = safeDouble(args[4], -1);
+						if (c <= 0 || s <= 0) { p.sendMessage("§cSeeds must be positive."); return true; }
+						try {
+							com.tntowns.TNtownsPlugin.getInstance().getMarketService().seedIpo(nation, m, c, s);
+							p.sendMessage("§aIPO seeded. Price ≈ §e$" + String.format(java.util.Locale.US, "%.4f", com.tntowns.TNtownsPlugin.getInstance().getMarketService().getSpotPrice(m)));
+						} catch (Exception ex) {
+							p.sendMessage("§cIPO failed: " + ex.getMessage());
+						}
+						return true;
+					}
+					p.sendMessage("§eUsage: /" + label + " market admin <ipo>");
+					return true;
+				}
+				p.sendMessage("§eUsage: /" + label + " market [info|price|buy <$> [minShares]|sell <shares> [min$]|admin <ipo>]");
+				return true;
+			}
 			// 'expand' moved under admin
 			case "admin": {
 				if (args.length == 1) { p.sendMessage("§eUsage: /" + label + " admin <invite|kick|rank|bank [list]|expand|tax set <amount>|tax get|debug gettaxes>"); return true; }
@@ -250,6 +316,10 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 				p.sendMessage("§cUnknown subcommand.");
 				return true;
 		}
+	}
+
+	private double safeDouble(String s, double def) {
+		try { return Double.parseDouble(s); } catch (Exception ex) { return def; }
 	}
 
 	private String joinArgs(String[] arr, int start) {

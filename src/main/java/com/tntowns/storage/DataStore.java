@@ -17,11 +17,13 @@ public class DataStore {
     private final File nationsFile;
     private final File plotsFile;
     private final File metaFile;
+    private final File marketsFile;
 
     private Map<UUID, Resident> residents = new HashMap<>();
     private Map<String, Town> towns = new HashMap<>();
     private Map<String, Nation> nations = new HashMap<>();
     private Map<String, Plot> plots = new HashMap<>(); // key = claimKey
+    private Map<String, com.tntowns.model.NationMarket> markets = new HashMap<>(); // nationId -> market
     private int nextTownId = 1;
     private int nextNationId = 1;
 
@@ -31,6 +33,7 @@ public class DataStore {
         this.nationsFile = new File(dataFolder, "nations.yml");
         this.plotsFile = new File(dataFolder, "plots.yml");
         this.metaFile = new File(dataFolder, "meta.yml");
+        this.marketsFile = new File(dataFolder, "markets.yml");
     }
 
     public Map<UUID, Resident> getResidents() {
@@ -49,12 +52,17 @@ public class DataStore {
         return plots;
     }
 
+    public Map<String, com.tntowns.model.NationMarket> getMarkets() {
+        return markets;
+    }
+
     public void loadAll() throws IOException {
         loadMeta();
         loadResidents();
         loadTowns();
         loadNations();
         loadPlots();
+        loadMarkets();
     }
 
     public void saveAll() throws IOException {
@@ -62,6 +70,7 @@ public class DataStore {
         saveTowns();
         saveNations();
         savePlots();
+        saveMarkets();
         saveMeta();
     }
 
@@ -232,6 +241,43 @@ public class DataStore {
             cfg.set(key + ".price", p.getPrice());
         }
         cfg.save(plotsFile);
+    }
+
+    private void loadMarkets() throws IOException {
+        markets.clear();
+        if (!marketsFile.exists()) return;
+        FileConfiguration cfg = YamlConfiguration.loadConfiguration(marketsFile);
+        for (String nationId : cfg.getKeys(false)) {
+            com.tntowns.model.NationMarket m = new com.tntowns.model.NationMarket();
+            m.setNationId(nationId);
+            m.setCurrencyReserve(cfg.getDouble(nationId + ".currencyReserve", 0.0));
+            m.setShareReserve(cfg.getDouble(nationId + ".shareReserve", 0.0));
+            m.setTotalSharesIssued(cfg.getDouble(nationId + ".totalSharesIssued", 0.0));
+            m.setFeeBps(cfg.getInt(nationId + ".feeBps", 30));
+            java.util.Map<String, Object> holders = cfg.getConfigurationSection(nationId + ".holders") != null ? cfg.getConfigurationSection(nationId + ".holders").getValues(false) : java.util.Collections.emptyMap();
+            java.util.Map<String, Double> mapped = new java.util.HashMap<>();
+            for (java.util.Map.Entry<String, Object> en : holders.entrySet()) {
+                if (en.getValue() instanceof Number) mapped.put(en.getKey(), ((Number) en.getValue()).doubleValue());
+            }
+            m.setHolderShares(mapped);
+            markets.put(nationId.toLowerCase(), m);
+        }
+    }
+
+    private void saveMarkets() throws IOException {
+        FileConfiguration cfg = new YamlConfiguration();
+        for (Map.Entry<String, com.tntowns.model.NationMarket> e : markets.entrySet()) {
+            String id = e.getKey();
+            com.tntowns.model.NationMarket m = e.getValue();
+            cfg.set(id + ".currencyReserve", m.getCurrencyReserve());
+            cfg.set(id + ".shareReserve", m.getShareReserve());
+            cfg.set(id + ".totalSharesIssued", m.getTotalSharesIssued());
+            cfg.set(id + ".feeBps", m.getFeeBps());
+            for (java.util.Map.Entry<String, Double> en : m.getHolderShares().entrySet()) {
+                cfg.set(id + ".holders." + en.getKey(), en.getValue());
+            }
+        }
+        cfg.save(marketsFile);
     }
 
     private void loadMeta() throws IOException {
