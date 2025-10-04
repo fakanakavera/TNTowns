@@ -254,6 +254,7 @@ public class DataStore {
             m.setShareReserve(cfg.getDouble(nationId + ".shareReserve", 0.0));
             m.setTotalSharesIssued(cfg.getDouble(nationId + ".totalSharesIssued", 0.0));
             m.setFeeBps(cfg.getInt(nationId + ".feeBps", 30));
+            m.setMarketRank(cfg.getInt(nationId + ".marketRank", 1));
             java.util.Map<String, Object> holders = cfg.getConfigurationSection(nationId + ".holders") != null ? cfg.getConfigurationSection(nationId + ".holders").getValues(false) : java.util.Collections.emptyMap();
             java.util.Map<String, Double> mapped = new java.util.HashMap<>();
             for (java.util.Map.Entry<String, Object> en : holders.entrySet()) {
@@ -273,6 +274,7 @@ public class DataStore {
             cfg.set(id + ".shareReserve", m.getShareReserve());
             cfg.set(id + ".totalSharesIssued", m.getTotalSharesIssued());
             cfg.set(id + ".feeBps", m.getFeeBps());
+            cfg.set(id + ".marketRank", m.getMarketRank());
             for (java.util.Map.Entry<String, Double> en : m.getHolderShares().entrySet()) {
                 cfg.set(id + ".holders." + en.getKey(), en.getValue());
             }

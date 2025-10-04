@@ -10,6 +10,7 @@ public class NationMarket {
     private double shareReserve;    // AMM share reserve (pool-held shares)
     private double totalSharesIssued; // Cumulative minted shares
     private int feeBps = 30; // 0.30% default trading fee
+    private int marketRank = 1; // IPO = rank 1 by default
 
     private Map<String, Double> holderShares = new HashMap<>(); // uuid -> shares
 
@@ -59,6 +60,14 @@ public class NationMarket {
 
     public void setHolderShares(Map<String, Double> holderShares) {
         this.holderShares = holderShares;
+    }
+
+    public int getMarketRank() {
+        return marketRank;
+    }
+
+    public void setMarketRank(int marketRank) {
+        this.marketRank = marketRank;
     }
 }
 

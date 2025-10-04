@@ -21,6 +21,7 @@ public class MarketService {
             m.setCurrencyReserve(0.0);
             m.setShareReserve(0.0);
             m.setTotalSharesIssued(0.0);
+            m.setMarketRank(1);
             return m;
         });
     }
@@ -102,6 +103,44 @@ public class MarketService {
         m.setCurrencyReserve(m.getCurrencyReserve() + currencySeed);
         m.setShareReserve(m.getShareReserve() + shareSeed);
         m.setTotalSharesIssued(m.getTotalSharesIssued() + shareSeed);
+    }
+
+    public boolean canMintMoreShares(org.bukkit.configuration.file.FileConfiguration cfg, NationMarket m, double additional) {
+        double cap = getShareCapForRank(cfg, m.getMarketRank());
+        return (m.getTotalSharesIssued() + Math.max(0.0, additional)) <= cap;
+    }
+
+    public double getShareCapForRank(org.bukkit.configuration.file.FileConfiguration cfg, int rank) {
+        java.util.List<Double> caps = cfg.getDoubleList("nation.market.rank_share_caps");
+        if (caps == null || caps.isEmpty()) return Double.MAX_VALUE;
+        int idx = Math.max(1, rank) - 1;
+        if (idx >= caps.size()) return caps.get(caps.size() - 1);
+        return caps.get(idx);
+    }
+
+    public double getRankUpCost(org.bukkit.configuration.file.FileConfiguration cfg, int nextRank) {
+        java.util.List<Double> costs = cfg.getDoubleList("nation.market.rank_up_costs");
+        if (costs == null || costs.isEmpty()) return 0.0;
+        int idx = Math.max(1, nextRank) - 1;
+        if (idx >= costs.size()) return costs.get(costs.size() - 1);
+        return costs.get(idx);
+    }
+
+    public boolean rankUp(Nation nation, NationMarket m, org.bukkit.configuration.file.FileConfiguration cfg) {
+        int next = m.getMarketRank() + 1;
+        double cost = getRankUpCost(cfg, next);
+        if (nation.getBankBalance() < cost) return false;
+        nation.setBankBalance(nation.getBankBalance() - cost);
+        m.setMarketRank(next);
+        return true;
+    }
+
+    public boolean mint(NationMarket m, double shares, org.bukkit.configuration.file.FileConfiguration cfg) {
+        if (shares <= 0) return false;
+        if (!canMintMoreShares(cfg, m, shares)) return false;
+        m.setShareReserve(m.getShareReserve() + shares);
+        m.setTotalSharesIssued(m.getTotalSharesIssued() + shares);
+        return true;
     }
 }
 

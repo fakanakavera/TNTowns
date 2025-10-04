@@ -188,7 +188,23 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 						}
 						return true;
 					}
-					p.sendMessage("§eUsage: /" + label + " market admin <ipo>");
+					if (args.length >= 3 && args[2].equalsIgnoreCase("rankup")) {
+						boolean ok = com.tntowns.TNtownsPlugin.getInstance().getMarketService().rankUp(nation, m, com.tntowns.TNtownsPlugin.getInstance().getConfig());
+						p.sendMessage(ok ? "§aNation market rank is now §e" + m.getMarketRank() : "§cRank up failed (insufficient funds?)");
+						return true;
+					}
+					if (args.length >= 4 && args[2].equalsIgnoreCase("mint")) {
+						double shares = safeDouble(args[3], -1);
+						if (shares <= 0) { p.sendMessage("§eUsage: /" + label + " market admin mint <shares>"); return true; }
+						boolean ok = com.tntowns.TNtownsPlugin.getInstance().getMarketService().mint(m, shares, com.tntowns.TNtownsPlugin.getInstance().getConfig());
+						if (!ok) {
+							p.sendMessage("§cMint failed (over cap for current rank).");
+							return true;
+						}
+						p.sendMessage("§aMinted §e" + String.format(java.util.Locale.US, "%.2f", shares) + " §ashares to pool. Issued total: §e" + String.format(java.util.Locale.US, "%.2f", m.getTotalSharesIssued()));
+						return true;
+					}
+					p.sendMessage("§eUsage: /" + label + " market admin <ipo|rankup|mint>");
 					return true;
 				}
 				p.sendMessage("§eUsage: /" + label + " market [info|price|buy <$> [minShares]|sell <shares> [min$]|admin <ipo>]");
@@ -330,7 +346,7 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 	@Override
 	public List<String> onTabComplete(CommandSender sender, org.bukkit.command.Command command, String alias, String[] args) {
 		if (!(sender instanceof Player)) return Collections.emptyList();
-		List<String> subs = Arrays.asList("create","addtown","ally","enemy","bank","expand","admin","accept");
+		List<String> subs = Arrays.asList("create","addtown","ally","enemy","bank","expand","admin","accept","market");
 		if (args.length == 1) {
 			return subs.stream().filter(s -> s.startsWith(args[0].toLowerCase())).collect(java.util.stream.Collectors.toList());
 		}
@@ -358,6 +374,12 @@ public class NationCommand implements CommandExecutor, TabCompleter {
 				}
 				if (args.length == 4 && args[1].equalsIgnoreCase("tax") && args[2].equalsIgnoreCase("debug")) {
 					return Collections.singletonList("gettaxes");
+				}
+				return Collections.emptyList();
+			case "market":
+				if (args.length == 2) return Arrays.asList("info","price","buy","sell","admin").stream().filter(v -> v.startsWith(args[1].toLowerCase())).collect(java.util.stream.Collectors.toList());
+				if (args.length == 3 && args[1].equalsIgnoreCase("admin")) {
+					return Arrays.asList("ipo","rankup","mint");
 				}
 				return Collections.emptyList();
 			default:
